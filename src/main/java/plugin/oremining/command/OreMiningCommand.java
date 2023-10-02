@@ -1,7 +1,9 @@
 package plugin.oremining.command;
 
 import java.util.Objects;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,13 +27,33 @@ public class OreMiningCommand implements CommandExecutor, Listener {
       player.sendTitle("鉱石採掘ゲームスタート", player.getName(),
           0, 50, 0);
 
-      //ダイヤモンドのピッケルを取得
-      PlayerInventory inventory = player.getInventory();
-      inventory.setItemInMainHand(new ItemStack(Material.DIAMOND_PICKAXE));
+      initialSet(player);
+
+      //チェック用　後々削除予定
+      World world = player.getWorld();
+      Location playerLocation = player.getLocation();
+      world.setBlockData(playerLocation, Material.EMERALD_ORE.createBlockData());
     }
     return false;
   }
 
+  /**
+   * ゲーム開始時に体力と空腹度を20に設定し、ダイヤモンドピッケルを装備
+   *
+   * @param player コマンドを実行したプレイヤー
+   */
+  private void initialSet(Player player) {
+    player.setFoodLevel(20);
+    player.setHealth(20);
+    PlayerInventory inventory = player.getInventory();
+    inventory.setItemInMainHand(new ItemStack(Material.DIAMOND_PICKAXE));
+  }
+
+  /**
+   * 特定の鉱石を採掘した時に点数を加算します。
+   * 石炭鉱石・鉄鉱石10点、金鉱石50点、ダイヤモンド鉱石100点
+   * @param e コマンドを実行したプレイヤー
+   */
   @EventHandler
   public void PlayerBlockDropItemEvent(BlockDropItemEvent e) {
     Player player = e.getPlayer();
@@ -45,13 +67,17 @@ public class OreMiningCommand implements CommandExecutor, Listener {
     }
 
     if (this.player.equals(player)) {
-      if (blockState.getType().equals(Material.COAL_ORE)) {
+      Material type = blockState.getType();
+      if (type == Material.COAL_ORE || type == Material.IRON_ORE) {
         score += 10;
-        player.sendMessage("プレイヤーは石炭をゲットしました！" + score + " 点");
-      } else if (blockState.getType().equals(Material.IRON_ORE)) {
-        score += 10;
-        player.sendMessage("プレイヤーは鉄をゲットしました！" + score + " 点");
-      }
+        player.sendMessage("現在のプレイヤーのスコアは" + score + " 点");
+      } else if (type == Material.GOLD_ORE) {
+        score += 50;
+        player.sendMessage("現在のプレイヤーのスコアは" + score + " 点");
+      } else if (type == Material.DIAMOND_ORE) {
+        score += 100;
+        player.sendMessage("現在のプレイヤーのスコアは" + score + " 点");
       }
     }
   }
+}
