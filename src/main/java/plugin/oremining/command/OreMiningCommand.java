@@ -1,13 +1,15 @@
 package plugin.oremining.command;
 
+import java.util.Objects;
 import org.bukkit.Material;
+import org.bukkit.block.BlockState;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -18,9 +20,10 @@ public class OreMiningCommand implements CommandExecutor, Listener {
 
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-    if(sender instanceof Player player){
+    if (sender instanceof Player player) {
       this.player = player;
-      player.sendMessage("鉱石採掘ゲームが開始されました！！");
+      player.sendTitle("鉱石採掘ゲームスタート", player.getName(),
+          0, 50, 0);
 
       //ダイヤモンドのピッケルを取得
       PlayerInventory inventory = player.getInventory();
@@ -30,13 +33,25 @@ public class OreMiningCommand implements CommandExecutor, Listener {
   }
 
   @EventHandler
-  public void PlayerHarvestBlockEvent(BlockBreakEvent e){
+  public void PlayerBlockDropItemEvent(BlockDropItemEvent e) {
     Player player = e.getPlayer();
-    if (this.player.equals(player)){
-      if(e.getBlock().getType().equals(Material.COAL_ORE)) {
+    BlockState blockState = e.getBlockState();
+
+    if (Objects.isNull(player)) {
+      return;
+    }
+    if (Objects.isNull(this.player)) {
+      return;
+    }
+
+    if (this.player.equals(player)) {
+      if (blockState.getType().equals(Material.COAL_ORE)) {
         score += 10;
-        player.sendMessage("プレイヤーは石炭をゲットしました！" + score + "点" );
+        player.sendMessage("プレイヤーは石炭をゲットしました！" + score + " 点");
+      } else if (blockState.getType().equals(Material.IRON_ORE)) {
+        score += 10;
+        player.sendMessage("プレイヤーは鉄をゲットしました！" + score + " 点");
+      }
       }
     }
   }
-}
