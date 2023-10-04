@@ -8,7 +8,7 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        OreMiningCommand oreMiningCommand = new OreMiningCommand();
+        OreMiningCommand oreMiningCommand = new OreMiningCommand(this);
         Bukkit.getPluginManager().registerEvents(oreMiningCommand, this);
         getCommand("oreMining").setExecutor(oreMiningCommand);
     }
