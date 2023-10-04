@@ -1,9 +1,8 @@
 package plugin.oremining.command;
 
 import java.util.Objects;
-import org.bukkit.Location;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,11 +13,19 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import plugin.oremining.Main;
 
 public class OreMiningCommand implements CommandExecutor, Listener {
 
+  private Main main;
   private Player player;
+  private int gameTime = 40;
   private int score;
+
+
+  public OreMiningCommand(Main main) {
+    this.main = main;
+  }
 
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -26,13 +33,21 @@ public class OreMiningCommand implements CommandExecutor, Listener {
       this.player = player;
       player.sendTitle("鉱石採掘ゲームスタート", player.getName(),
           0, 50, 0);
+      gameTime = 40;
 
       initialSet(player);
 
-      //チェック用　後々削除予定
-      World world = player.getWorld();
-      Location playerLocation = player.getLocation();
-      world.setBlockData(playerLocation, Material.EMERALD_ORE.createBlockData());
+      Bukkit.getScheduler().runTaskTimer(main,Runnable -> {
+        if(gameTime <= 0){
+          Runnable.cancel();
+          player.sendTitle("ゲームが終了しました。",
+              player.getName() + " の点数は" + score + " 点です",
+              0,50, 0);
+          return;
+        }
+        player.sendMessage("残り時間が " + gameTime +" 秒になりました！");
+        gameTime -= 20;
+      },0, 20 * 20);
     }
     return false;
   }
