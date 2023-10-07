@@ -1,11 +1,11 @@
 package plugin.oremining.command;
 
+import static org.bukkit.Material.DIAMOND_PICKAXE;
+
 import java.util.Objects;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,42 +15,49 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import plugin.oremining.Main;
 
-public class OreMiningCommand implements CommandExecutor, Listener {
+public class OreMiningCommand extends BaseCommand implements  Listener {
 
   private Main main;
   private Player player;
-  private int gameTime = 40;
-  private int score;
-
+  private int gameTime = 300;
+  private int score ;
 
   public OreMiningCommand(Main main) {
     this.main = main;
   }
-
   @Override
-  public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-    if (sender instanceof Player player) {
-      this.player = player;
-      player.sendTitle("鉱石採掘ゲームスタート", player.getName(),
-          0, 50, 0);
-      gameTime = 40;
+  public boolean onExecutePlayerCommand(Player player) {
+    this.player = player;
 
-      initialSet(player);
+    gameTime = 300;
 
-      Bukkit.getScheduler().runTaskTimer(main,Runnable -> {
-        if(gameTime <= 0){
-          Runnable.cancel();
-          player.sendTitle("ゲームが終了しました。",
-              player.getName() + " の点数は" + score + " 点です",
-              0,50, 0);
-          return;
-        }
-        player.sendMessage("残り時間が " + gameTime +" 秒になりました！");
-        gameTime -= 20;
-      },0, 20 * 20);
-    }
+    player.sendTitle("鉱石採掘ゲームスタート",
+        player.getName() + "制限時間300秒",
+        0, 70, 0);
+
+    initialSet(player);
+
+    //PlayerBlockDropItemEventでスコアを取得　ここを直したい
+
+    Bukkit.getScheduler().runTaskTimer(main, Runnable -> {
+      if (gameTime <= 0) {
+        Runnable.cancel();
+        player.sendTitle("ゲームが終了しました。",
+            player.getName() + " の点数は" + score + " 点です",
+            0, 70, 0);
+        score = 0;
+        return;
+      }
+      player.sendMessage("残り時間 " + gameTime + " 秒!");
+      gameTime -= 120;
+    }, 0, 120 * 20);
+    return true;
+  }
+  @Override
+  public boolean onExecuteNPCCommand(CommandSender sender) {
     return false;
   }
+
 
   /**
    * ゲーム開始時に体力と空腹度を20に設定し、ダイヤモンドピッケルを装備
@@ -61,22 +68,18 @@ public class OreMiningCommand implements CommandExecutor, Listener {
     player.setFoodLevel(20);
     player.setHealth(20);
     PlayerInventory inventory = player.getInventory();
-    inventory.setItemInMainHand(new ItemStack(Material.DIAMOND_PICKAXE));
+    inventory.setItemInMainHand(new ItemStack(DIAMOND_PICKAXE));
   }
-
   /**
    * 特定の鉱石を採掘した時に点数を加算します。
    * 石炭鉱石・鉄鉱石10点、金鉱石50点、ダイヤモンド鉱石100点
-   * @param e コマンドを実行したプレイヤー
+   * @param e イベントを発生させたプレイヤー
    */
   @EventHandler
   public void PlayerBlockDropItemEvent(BlockDropItemEvent e) {
     Player player = e.getPlayer();
     BlockState blockState = e.getBlockState();
 
-    if (Objects.isNull(player)) {
-      return;
-    }
     if (Objects.isNull(this.player)) {
       return;
     }
