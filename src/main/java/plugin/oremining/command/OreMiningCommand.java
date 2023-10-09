@@ -15,6 +15,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import plugin.oremining.Main;
 
+/**
+ * 制限時間内に指定した鉱石を採掘して、スコアを獲得するゲームを起動するコマンドです。
+ * スコアは鉱石によって変わり、採掘した鉱石の合計によってスコアが変動します。
+ */
 public class OreMiningCommand extends BaseCommand implements  Listener {
 
   private Main main;
@@ -37,8 +41,34 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
 
     initialSet(player);
 
-    //PlayerBlockDropItemEventでスコアを取得　ここを直したい
+    gamePlay(player);
 
+    //playerBlockDropItemEventをここに追加予定!!
+
+    return true;
+  }
+
+  @Override
+  public boolean onExecuteNPCCommand(CommandSender sender) {
+    return false;
+  }
+
+  /**
+   * ゲーム開始時に体力と空腹度を20に設定し、ダイヤモンドピッケルを装備*
+   * @param player コマンドを実行したプレイヤー
+   */
+  private void initialSet(Player player) {
+    player.setFoodLevel(20);
+    player.setHealth(20);
+    PlayerInventory inventory = player.getInventory();
+    inventory.setItemInMainHand(new ItemStack(DIAMOND_PICKAXE));
+  }
+
+  /**
+   * ゲームの時間及び最終的なスコアを表示
+   * @param player コマンドを実行したプレイヤー
+   */
+  private void gamePlay(Player player) {
     Bukkit.getScheduler().runTaskTimer(main, Runnable -> {
       if (gameTime <= 0) {
         Runnable.cancel();
@@ -51,51 +81,34 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       player.sendMessage("残り時間 " + gameTime + " 秒!");
       gameTime -= 120;
     }, 0, 120 * 20);
-    return true;
-  }
-  @Override
-  public boolean onExecuteNPCCommand(CommandSender sender) {
-    return false;
   }
 
-
-  /**
-   * ゲーム開始時に体力と空腹度を20に設定し、ダイヤモンドピッケルを装備
-   *
-   * @param player コマンドを実行したプレイヤー
-   */
-  private void initialSet(Player player) {
-    player.setFoodLevel(20);
-    player.setHealth(20);
-    PlayerInventory inventory = player.getInventory();
-    inventory.setItemInMainHand(new ItemStack(DIAMOND_PICKAXE));
-  }
   /**
    * 特定の鉱石を採掘した時に点数を加算します。
    * 石炭鉱石・鉄鉱石10点、金鉱石50点、ダイヤモンド鉱石100点
-   * @param e イベントを発生させたプレイヤー
+   * @param dropItemEvent イベントを発生させたプレイヤー
    */
   @EventHandler
-  public void PlayerBlockDropItemEvent(BlockDropItemEvent e) {
-    Player player = e.getPlayer();
-    BlockState blockState = e.getBlockState();
+  public void playerBlockDropItemEvent(BlockDropItemEvent dropItemEvent) {
+    Player player = dropItemEvent.getPlayer();
+    BlockState blockState = dropItemEvent.getBlockState();
+    Material type = blockState.getType();
 
     if (Objects.isNull(this.player)) {
       return;
     }
 
     if (this.player.equals(player)) {
-      Material type = blockState.getType();
-      if (type == Material.COAL_ORE || type == Material.IRON_ORE) {
-        score += 10;
-        player.sendMessage("現在のプレイヤーのスコアは" + score + " 点");
-      } else if (type == Material.GOLD_ORE) {
-        score += 50;
-        player.sendMessage("現在のプレイヤーのスコアは" + score + " 点");
-      } else if (type == Material.DIAMOND_ORE) {
-        score += 100;
-        player.sendMessage("現在のプレイヤーのスコアは" + score + " 点");
+      switch (type) {
+        case COAL_ORE, IRON_ORE, GOLD_ORE, DIAMOND_ORE -> {
+          switch (type) {
+            case COAL_ORE, IRON_ORE -> score += 10;
+            case GOLD_ORE -> score += 50;
+            case DIAMOND_ORE -> score += 100;
+          }
+          player.sendMessage("現在のスコアは" + score + " 点です。");
+        }
       }
     }
   }
-}
+  }
