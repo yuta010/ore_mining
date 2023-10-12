@@ -25,7 +25,6 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
 
   private final Main main;
   List<PlayerScore> playerScoreList = new ArrayList<>();
-  private int gameTime;
 
 
   public OreMiningCommand(Main main) {
@@ -33,24 +32,16 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   }
   @Override
   public boolean onExecutePlayerCommand(Player player) {
+    PlayerScore nowPlayer = getPlayerScore(player);
+    nowPlayer.setGameTime(300);
 
-    if(playerScoreList.isEmpty()) {
-      addNewPlayer(player);
-    } else {
-      for(PlayerScore playerScore : playerScoreList){
-        if(!playerScore.getPlayerName().equals(player.getName())){
-          addNewPlayer(player);
-        }
-      }
-    }
-
-    gameTime = 300;
+    getPlayerScore(player);
 
     gameStart(player);
 
     initialSet(player);
 
-    gamePlay(player);
+    gamePlay(player, nowPlayer);
 
     return true;
   }
@@ -92,15 +83,37 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       }
     }
     }
+  /**
+   * 現在を取得する。
+   *
+   * @param player  コマンドを実行したプレイヤー
+   * @return  現在実行しているプレイヤのスコア情報
+   */
+  private PlayerScore getPlayerScore(Player player) {
+    if(playerScoreList.isEmpty()) {
+      return addNewPlayer(player);
+    } else {
+      for(PlayerScore playerScore : playerScoreList){
+        if(!playerScore.getPlayerName().equals(player.getName())){
+          return addNewPlayer(player);
+        } else{
+          return playerScore;
+        }
+      }
+    }
+    return null;
+  }
 
   /**
    * 新規のプレイヤー情報をリストに追加されます。
    * @param player  コマンドを実行したプレイヤー
+   * @return 新規プレイヤー
    */
-  private void addNewPlayer(Player player) {
+  private PlayerScore addNewPlayer(Player player) {
     PlayerScore newPlayer = new PlayerScore();
     newPlayer.setPlayerName(player.getName());
     playerScoreList.add(newPlayer);
+    return newPlayer;
   }
 
   /**
@@ -123,22 +136,19 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
     PlayerInventory inventory = player.getInventory();
     inventory.setItemInMainHand(new ItemStack(DIAMOND_PICKAXE));
   }
-
-  /**
-   * ゲーム時間及び最終スコアを表示
-   * @param player コマンドを実行したプレイヤー
-   */
-  private void gamePlay(Player player) {
+  private void gamePlay(Player player, PlayerScore nowPlayer) {
     Bukkit.getScheduler().runTaskTimer(main, Runnable -> {
-      if (gameTime <= 0) {
+      if (nowPlayer.getGameTime() <= 0) {
         Runnable.cancel();
         player.sendTitle("ゲームが終了しました。",
-            player.getName() + " の点数は" + " 点です",
+            player.getName() + " の点数は" + nowPlayer.getScore() +" 点です",
             0, 70, 0);
+        nowPlayer.setScore(0);
         return;
       }
-      player.sendMessage("残り時間 " + gameTime + " 秒");
-      gameTime -= 120;
+      player.sendMessage("残り時間 " + nowPlayer.getGameTime() + " 秒");
+      nowPlayer.setGameTime(nowPlayer.getGameTime() - 120);
     }, 0, 120 * 20);
   }
-  }
+
+}
