@@ -84,10 +84,9 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
     }
     }
   /**
-   * 現在を取得する。
-   *
+   * 現在実行しているプレイヤーのスコア情報を取得する。
    * @param player  コマンドを実行したプレイヤー
-   * @return  現在実行しているプレイヤのスコア情報
+   * @return  現在ゲームを実行しているプレイヤーのスコア情報
    */
   private PlayerScore getPlayerScore(Player player) {
     if(playerScoreList.isEmpty()) {
@@ -136,6 +135,12 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
     PlayerInventory inventory = player.getInventory();
     inventory.setItemInMainHand(new ItemStack(DIAMOND_PICKAXE));
   }
+
+  /**
+   * ゲーム実施中に時間を表示し、終了後にスコアを表示します。
+   * @param player  コマンドを実行したプレイヤー
+   * @param nowPlayer 現在ゲームを実行しているプレイヤーのスコア情報
+   */
   private void gamePlay(Player player, PlayerScore nowPlayer) {
     Bukkit.getScheduler().runTaskTimer(main, Runnable -> {
       if (nowPlayer.getGameTime() <= 0) {
