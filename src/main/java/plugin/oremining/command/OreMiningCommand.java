@@ -20,9 +20,11 @@ import plugin.oremining.data.PlayerScore;
 /**
  * 制限時間内に指定した鉱石を採掘して、スコアを獲得するゲームを起動するコマンドです。
  * スコアは鉱石によって変わり、採掘した鉱石の合計によってスコアが変動します。
+ *
  */
 public class OreMiningCommand extends BaseCommand implements  Listener {
 
+  public static final int GAME_TIME = 300;
   private final Main main;
   List<PlayerScore> playerScoreList = new ArrayList<>();
 
@@ -32,16 +34,15 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   }
   @Override
   public boolean onExecutePlayerCommand(Player player) {
-    PlayerScore nowPlayer = getPlayerScore(player);
-    nowPlayer.setGameTime(300);
+    PlayerScore nowPlayerScore = getPlayerScore(player);
 
     getPlayerScore(player);
 
-    gameStart(player);
-
     initialSet(player);
 
-    gamePlay(player, nowPlayer);
+    gameStart(player);
+
+    gamePlay(player, nowPlayerScore);
 
     return true;
   }
@@ -76,32 +77,15 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
               case GOLD_ORE -> score += 50;
               case DIAMOND_ORE -> score += 100;
             }
-            playerScore.setScore(playerScore.getScore() + score);
-            player.sendMessage("現在のスコアは" + playerScore.getScore() + " 点です。");
+            if (playerScore.getGameTime() > 0) {
+              playerScore.setScore(playerScore.getScore() + score);
+              player.sendMessage("現在のスコアは" + playerScore.getScore() + " 点です。");
+            }
           }
         }
       }
     }
     }
-  /**
-   * 現在実行しているプレイヤーのスコア情報を取得する。
-   * @param player  コマンドを実行したプレイヤー
-   * @return  現在ゲームを実行しているプレイヤーのスコア情報
-   */
-  private PlayerScore getPlayerScore(Player player) {
-    if(playerScoreList.isEmpty()) {
-      return addNewPlayer(player);
-    } else {
-      for(PlayerScore playerScore : playerScoreList){
-        if(!playerScore.getPlayerName().equals(player.getName())){
-          return addNewPlayer(player);
-        } else{
-          return playerScore;
-        }
-      }
-    }
-    return null;
-  }
 
   /**
    * 新規のプレイヤー情報をリストに追加されます。
@@ -116,13 +100,23 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   }
 
   /**
-   * ゲーム開始を知らせる。
+   * 現在実行しているプレイヤーのスコア情報を取得する。
    * @param player  コマンドを実行したプレイヤー
+   * @return  現在ゲームを実行しているプレイヤーのスコア情報
    */
-  private void gameStart(Player player) {
-    player.sendTitle("鉱石採掘ゲームスタート",
-        player.getName() + "制限時間300秒",
-        0, 70, 0);
+  private PlayerScore getPlayerScore(Player player) {
+    PlayerScore playerScore = new PlayerScore();
+    if(playerScoreList.isEmpty()) {
+      playerScore = addNewPlayer(player);
+    } else {
+      return playerScoreList.stream().findFirst().map(ps
+          -> ps.getPlayerName().equals(player.getName())
+          ? ps
+          : addNewPlayer(player)).orElse(playerScore);
+    }
+    playerScore.setGameTime(GAME_TIME);
+    playerScore.setScore(0);
+    return playerScore;
   }
 
   /**
@@ -137,23 +131,33 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   }
 
   /**
+   * ゲーム開始を知らせる。
+   * @param player  コマンドを実行したプレイヤー
+   */
+  private void gameStart(Player player) {
+    player.sendTitle("鉱石採掘ゲームスタート",
+        player.getName() + "制限時間" + GAME_TIME / 60 + " 分",
+        0, 70, 0);
+
+  }
+
+  /**
    * ゲーム実施中に時間を表示し、終了後にスコアを表示します。
    * @param player  コマンドを実行したプレイヤー
    * @param nowPlayer 現在ゲームを実行しているプレイヤーのスコア情報
    */
   private void gamePlay(Player player, PlayerScore nowPlayer) {
-    Bukkit.getScheduler().runTaskTimer(main, Runnable -> {
-      if (nowPlayer.getGameTime() <= 0) {
-        Runnable.cancel();
-        player.sendTitle("ゲームが終了しました。",
-            player.getName() + " の点数は" + nowPlayer.getScore() +" 点です",
-            0, 70, 0);
-        nowPlayer.setScore(0);
-        return;
-      }
-      player.sendMessage("残り時間 " + nowPlayer.getGameTime() + " 秒");
-      nowPlayer.setGameTime(nowPlayer.getGameTime() - 120);
-    }, 0, 120 * 20);
-  }
-
+      Bukkit.getScheduler().runTaskTimer(main, Runnable -> {
+        if (nowPlayer.getGameTime() <= 0) {
+          Runnable.cancel();
+          player.sendTitle("ゲームが終了しました。",
+              player.getName() + " の点数は" + nowPlayer.getScore() + " 点です",
+              0, 70, 0);
+          return;
+        }
+        player.sendMessage("残り時間 " + nowPlayer.getGameTime() / 60 + " 分!\n"  +
+            "現在のスコアは " + nowPlayer.getScore() + " 点です。");
+        nowPlayer.setGameTime(nowPlayer.getGameTime() - 60);
+      }, 0, 1200);
+    }
 }
