@@ -69,27 +69,27 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       return;
     }
 
-    for (PlayerScore playerScore : playerScoreList) {
-      if (playerScore.getPlayerName().equals(player.getName())) {
-        int score = 0;
-        switch (type) {
-          case COAL_ORE, IRON_ORE, GOLD_ORE, DIAMOND_ORE -> {
-            switch (type) {
-              case COAL_ORE -> score += 10;
-              case IRON_ORE -> score += 100;
-              case GOLD_ORE -> score += 800;
-              case DIAMOND_ORE -> score += 1000;
-            }
-
-            //ゲーム終了後にスコアが入らないように設定
-            if (playerScore.getGameTime() > 0) {
-              playerScore.setScore(playerScore.getScore() + score);
-              player.sendMessage("現在のスコアは" + playerScore.getScore() + " 点");
+    playerScoreList.stream()
+        .filter(p -> p.getPlayerName().equals(player.getName()))
+        .findFirst()
+        .ifPresent(p -> {
+          int score = 0;
+          switch (type) {
+            case COAL_ORE, IRON_ORE, GOLD_ORE, DIAMOND_ORE -> {
+              switch (type) {
+                case COAL_ORE -> score += 10;
+                case IRON_ORE -> score += 100;
+                case GOLD_ORE -> score += 800;
+                case DIAMOND_ORE -> score += 1000;
+              }
             }
           }
-        }
-      }
-    }
+          //ゲーム終了後にスコアが入らないように設定
+          if (p.getGameTime() > 0 && !(score == 0)) {
+            p.setScore(p.getScore() + score);
+            player.sendMessage("現在のスコアは" + p.getScore() + " 点");
+          }
+        });
   }
 
   /**
@@ -165,12 +165,10 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
             0, 70, 0);
         return;
       }
-      if(nowPlayer.getGameTime() == 60
-          || nowPlayer.getGameTime() == 120
-          || nowPlayer.getGameTime() == 180
-          || nowPlayer.getGameTime() == 240 ) {
-        player.sendMessage("残り " + nowPlayer.getGameTime() / 60 + " 分\n"
-        + "現在のスコア" + nowPlayer.getScore() + " 点");
+      switch (nowPlayer.getGameTime()) {
+        case 60, 120, 180, 240 ->
+            player.sendMessage("残り " + nowPlayer.getGameTime() / 60 + " 分\n"
+            + "現在のスコア" + nowPlayer.getScore() + " 点");
       }
       nowPlayer.setGameTime(nowPlayer.getGameTime() - 1);
     }, 0, 20);
