@@ -2,11 +2,19 @@ package plugin.oremining.command;
 
 import static org.bukkit.Material.DIAMOND_PICKAXE;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,13 +37,37 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   private final Main main;
   List<PlayerScore> playerScoreList = new ArrayList<>();
 
+  public static final String List = "list";
 
   public OreMiningCommand(Main main) {
     this.main = main;
   }
 
   @Override
-  public boolean onExecutePlayerCommand(Player player) {
+  public boolean onExecutePlayerCommand(Player player, Command command, String label, String[] args) {
+    if (args.length == 1 && List.equals(args[0])){
+      String url = "jdbc:mysql://localhost:3306/ore_mining";
+      String user = "root";
+      String password = "rootroot";
+      String sql = "select * from player_score;";
+      try(Connection con = DriverManager.getConnection(url,user,password);
+          Statement statement = con.createStatement();
+          ResultSet resultSet = statement.executeQuery(sql)) {
+        while (resultSet.next()) {
+          int id =resultSet.getInt("id");
+          String name = resultSet.getString("player_name");
+          int score = resultSet.getInt("score");
+
+          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+          LocalDateTime date = LocalDateTime.parse(resultSet.getString("registered_at"), formatter);
+
+          player.sendMessage(id + " | " + name + " | " + score + " | " + date.format(formatter));
+        }
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+      return false;
+    }
 
     PlayerScore nowPlayerScore = getPlayerScore(player);
 
@@ -51,7 +83,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   }
 
   @Override
-  public boolean onExecuteNPCCommand(CommandSender sender) {
+  public boolean onExecuteNPCCommand(CommandSender sender, Command command, String label, String[] args) {
     return false;
   }
 
