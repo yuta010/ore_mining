@@ -5,12 +5,9 @@ import static org.bukkit.Material.DIAMOND_PICKAXE;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -39,10 +36,6 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
 
   @Override
   public boolean onExecutePlayerCommand(Player player) {
-
-    Location playerLocation = player.getLocation();
-    World world = player.getWorld();
-    world.spawnEntity(playerLocation, EntityType.WITCH);
 
     PlayerScore nowPlayerScore = getPlayerScore(player);
 
