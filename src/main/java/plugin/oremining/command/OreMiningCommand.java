@@ -5,15 +5,19 @@ import static org.bukkit.Material.DIAMOND_PICKAXE;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.potion.PotionEffect;
 import plugin.oremining.Main;
 import plugin.oremining.data.PlayerScore;
 
@@ -35,6 +39,10 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
 
   @Override
   public boolean onExecutePlayerCommand(Player player) {
+
+    Location playerLocation = player.getLocation();
+    World world = player.getWorld();
+    world.spawnEntity(playerLocation, EntityType.WITCH);
 
     PlayerScore nowPlayerScore = getPlayerScore(player);
 
@@ -111,6 +119,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
     }
     playerScore.setScore(0);
     playerScore.setGameTime(GAME_TIME);
+    removePotionEffect(player);
     return playerScore;
   }
 
@@ -163,6 +172,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
         player.sendTitle("ゲームが終了しました。",
             nowPlayer.getPlayerName() + " の点数は" + nowPlayer.getScore() + " 点",
             0, 70, 0);
+        removePotionEffect(player);
         return;
       }
       switch (nowPlayer.getGameTime()) {
@@ -172,5 +182,16 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       }
       nowPlayer.setGameTime(nowPlayer.getGameTime() - 1);
     }, 0, 20);
+  }
+
+  /**
+   * プレイヤーに設定されている特殊効果を除外します。
+   * @param player  コマンドを実行したプレイヤー
+   */
+  private static void removePotionEffect(Player player) {
+    player.getActivePotionEffects()
+        .stream()
+        .map(PotionEffect::getType)
+        .forEach(player::removePotionEffect);
   }
 }
