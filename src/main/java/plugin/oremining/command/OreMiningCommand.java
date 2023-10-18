@@ -66,7 +66,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
         List<PlayerScore> playerScoreList = mapper.selectList();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         for(PlayerScore playerScore : playerScoreList){
-          LocalDateTime date = LocalDateTime.parse(playerScore.getRegistered_at(),formatter);
+          LocalDateTime date = LocalDateTime.parse(playerScore.getRegisteredAt(),formatter);
 
           player.sendMessage(String.format(playerScore.getId()
               + " | " + playerScore.getPlayerName()
@@ -74,27 +74,9 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
               + " | " + date.format(formatter)));
         }
       }
-
-//      try(Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/ore_mining"
-//          ,"root","rootroot");
-//          Statement statement = con.createStatement();
-//          ResultSet resultSet = statement.executeQuery("select * from player_score;")) {
-//        while (resultSet.next()) {
-//          int id =resultSet.getInt("id");
-//          String name = resultSet.getString("player_name");
-//          int score = resultSet.getInt("score");
-//
-//          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//          LocalDateTime date = LocalDateTime.parse(resultSet.getString("registered_at"), formatter);
-//
-//          player.sendMessage(id + " | " + name + " | " + score + " | " + date.format(formatter));
-//        }
-//      } catch (SQLException e) {
-//        e.printStackTrace();
-//      }
       return false;
-    } else if (args.length == 0) {
 
+    } else if (args.length == 0) {
       ExecutingPlayer nowExecutingPlayer = getPlayerScore(player);
 
       getPlayerScore(player);
@@ -104,6 +86,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       gameStart(player);
 
       gamePlay(player, nowExecutingPlayer);
+
     } else {
       player.sendMessage("実行できません。ゲームを実行する場合引数はなし。\n"
           + "スコアを表示する場合はlistを入力してください。");
