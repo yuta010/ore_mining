@@ -46,13 +46,10 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   @Override
   public boolean onExecutePlayerCommand(Player player, Command command, String label, String[] args) {
     if (args.length == 1 && List.equals(args[0])){
-      String url = "jdbc:mysql://localhost:3306/ore_mining";
-      String user = "root";
-      String password = "rootroot";
-      String sql = "select * from player_score;";
-      try(Connection con = DriverManager.getConnection(url,user,password);
+      try(Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/ore_mining"
+          ,"root","rootroot");
           Statement statement = con.createStatement();
-          ResultSet resultSet = statement.executeQuery(sql)) {
+          ResultSet resultSet = statement.executeQuery("select * from player_score;")) {
         while (resultSet.next()) {
           int id =resultSet.getInt("id");
           String name = resultSet.getString("player_name");
@@ -197,7 +194,23 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
         player.sendTitle("ゲームが終了しました。",
             nowPlayer.getPlayerName() + " の点数は" + nowPlayer.getScore() + " 点",
             0, 70, 0);
+
+        try(Connection con = DriverManager.getConnection(
+            "jdbc:mysql://localhost:3306/ore_mining",
+            "root","rootroot");
+
+        Statement statement = con.createStatement()){
+          statement.executeUpdate(
+              "insert player_score(player_name, score, registered_at)"
+              + "values('" + nowPlayer.getPlayerName() + "'," + nowPlayer.getScore() + ",now());");
+
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+
         removePotionEffect(player);
+
+
         return;
       }
       switch (nowPlayer.getGameTime()) {
