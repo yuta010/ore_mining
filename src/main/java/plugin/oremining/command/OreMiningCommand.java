@@ -4,11 +4,6 @@ import static org.bukkit.Material.DIAMOND_PICKAXE;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +39,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   private final Main main;
   List<ExecutingPlayer> executingPlayerList = new ArrayList<>();
   public static final String List = "list";
-  private SqlSessionFactory sqlSessionFactory;
+  private final SqlSessionFactory sqlSessionFactory;
 
   public OreMiningCommand(Main main) {
     this.main = main;
@@ -64,18 +59,14 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       try (SqlSession session = sqlSessionFactory.openSession()) {
         PlayerScoreMapper mapper = session.getMapper(PlayerScoreMapper.class);
         List<PlayerScore> playerScoreList = mapper.selectList();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         for(PlayerScore playerScore : playerScoreList){
-          LocalDateTime date = LocalDateTime.parse(playerScore.getRegisteredAt(),formatter);
-
           player.sendMessage(String.format(playerScore.getId()
               + " | " + playerScore.getPlayerName()
               + " | " + playerScore.getScore()
-              + " | " + date.format(formatter)));
+              + " | " + playerScore.getRegisteredAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         }
       }
       return false;
-
     } else if (args.length == 0) {
       ExecutingPlayer nowExecutingPlayer = getPlayerScore(player);
 
@@ -102,7 +93,6 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
 
   /**
    * 特定の鉱石を採掘した時にスコアを加算します。 石炭鉱石10点、鉄鉱石100点、金鉱石800点、ダイヤモンド鉱石1000点
-   *
    * @param dropItemEvent アイテムを採掘した時に発生するイベント
    */
   @EventHandler
@@ -115,27 +105,26 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       return;
     }
 
-    executingPlayerList.stream()
-        .filter(p -> p.getPlayerName().equals(player.getName()))
-        .findFirst()
-        .ifPresent(p -> {
-          int score = 0;
-          switch (type) {
-            case COAL_ORE, IRON_ORE, GOLD_ORE, DIAMOND_ORE -> {
-              switch (type) {
-                case COAL_ORE -> score += 10;
-                case IRON_ORE -> score += 100;
-                case GOLD_ORE -> score += 800;
-                case DIAMOND_ORE -> score += 1000;
-              }
+    for (ExecutingPlayer p : executingPlayerList) {
+      if (p.getPlayerName().equals(player.getName())) {
+        int score = 0;
+        switch (type) {
+          case COAL_ORE, IRON_ORE, GOLD_ORE, DIAMOND_ORE -> {
+            switch (type) {
+              case COAL_ORE -> score += 10;
+              case IRON_ORE -> score += 100;
+              case GOLD_ORE -> score += 800;
+              case DIAMOND_ORE -> score += 1000;
             }
           }
-          //ゲーム終了後にスコアが入らないように設定
-          if (p.getGameTime() > 0 && !(score == 0)) {
-            p.setScore(p.getScore() + score);
-            player.sendMessage("現在のスコアは" + p.getScore() + " 点");
-          }
-        });
+        }
+        //ゲーム終了後にスコアが入らないように設定
+        if (p.getGameTime() > 0 && !(score == 0)) {
+          p.setScore(p.getScore() + score);
+          player.sendMessage("現在のスコアは" + p.getScore() + " 点");
+        }
+      }
+    }
   }
 
   /**
@@ -211,18 +200,14 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
             nowExecutingPlayer.getPlayerName() + " の点数は" + nowExecutingPlayer.getScore() + " 点",
             0, 70, 0);
 
-        try(Connection con = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/ore_mining",
-            "root","rootroot");
-        Statement statement = con.createStatement()){
-          statement.executeUpdate(
-              "insert player_score(player_name, score, registered_at)"
-              + "values('" + nowExecutingPlayer.getPlayerName() + "'," + nowExecutingPlayer.getScore() + ",now());");
-        } catch (SQLException e) {
-          throw new RuntimeException(e);
-        }
-
         removePotionEffect(player);
+
+        try (SqlSession session = sqlSessionFactory.openSession(true)) {
+          PlayerScoreMapper mapper = session.getMapper(PlayerScoreMapper.class);
+          mapper.insert(new PlayerScore(
+              nowExecutingPlayer.getPlayerName(),
+              nowExecutingPlayer.getScore()));
+        }
         return;
       }
 
