@@ -1,6 +1,7 @@
 package plugin.oremining.command;
 
 import static org.bukkit.Material.DIAMOND_PICKAXE;
+import static org.bukkit.Material.TORCH;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -172,6 +173,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
     player.setHealth(20);
     PlayerInventory inventory = player.getInventory();
     inventory.setItemInMainHand(new ItemStack(DIAMOND_PICKAXE));
+    inventory.setItemInOffHand(new ItemStack(TORCH,64));
   }
 
   /**
