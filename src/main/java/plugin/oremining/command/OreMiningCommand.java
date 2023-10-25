@@ -93,7 +93,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   }
 
   /**
-   * 特定の鉱石を採掘した時にスコアを加算します。 石炭鉱石10点、鉄鉱石100点、金鉱石800点、ダイヤモンド鉱石1000点
+   * 特定の鉱石を採掘した時にスコアを加算します。 石炭鉱石10点、鉄鉱石100点、金鉱石800点、ダイヤモンド鉱石1000点(深層鉱石含む。)
    * @param dropItemEvent アイテムを採掘した時に発生するイベント
    */
   @EventHandler
@@ -110,12 +110,15 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       if (p.getPlayerName().equals(player.getName())) {
         int score = 0;
         switch (type) {
-          case COAL_ORE, IRON_ORE, GOLD_ORE, DIAMOND_ORE -> {
+          case COAL_ORE, DEEPSLATE_COAL_ORE,
+               IRON_ORE, DEEPSLATE_IRON_ORE,
+               GOLD_ORE, DEEPSLATE_GOLD_ORE,
+               DIAMOND_ORE,DEEPSLATE_DIAMOND_ORE -> {
             switch (type) {
-              case COAL_ORE -> score += 10;
-              case IRON_ORE -> score += 100;
-              case GOLD_ORE -> score += 800;
-              case DIAMOND_ORE -> score += 1000;
+              case COAL_ORE, DEEPSLATE_COAL_ORE -> score += 10;
+              case IRON_ORE, DEEPSLATE_IRON_ORE -> score += 100;
+              case GOLD_ORE, DEEPSLATE_GOLD_ORE -> score += 800;
+              case DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE -> score += 1000;
             }
           }
         }
@@ -221,6 +224,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       nowExecutingPlayer.setGameTime(nowExecutingPlayer.getGameTime() - 1);
     }, 0, 20);
   }
+
 
   /**
    * プレイヤーに設定されている特殊効果を除外します。
