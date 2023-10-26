@@ -33,7 +33,6 @@ public class GameCancelCommand extends BaseCommand {
     } else {
       player.sendMessage("ゲームは実行されていません。");
     }
-
     return false;
   }
 

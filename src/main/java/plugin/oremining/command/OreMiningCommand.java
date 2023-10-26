@@ -106,26 +106,19 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       return;
     }
 
-    for (ExecutingPlayer p : executingPlayerList) {
-      if (p.getPlayerName().equals(player.getName())) {
+    for (ExecutingPlayer executingPlayer : executingPlayerList) {
+      if (executingPlayer.getPlayerName().equals(player.getName())) {
         int score = 0;
         switch (type) {
-          case COAL_ORE, DEEPSLATE_COAL_ORE,
-               IRON_ORE, DEEPSLATE_IRON_ORE,
-               GOLD_ORE, DEEPSLATE_GOLD_ORE,
-               DIAMOND_ORE,DEEPSLATE_DIAMOND_ORE -> {
-            switch (type) {
-              case COAL_ORE, DEEPSLATE_COAL_ORE -> score += 10;
-              case IRON_ORE, DEEPSLATE_IRON_ORE -> score += 100;
-              case GOLD_ORE, DEEPSLATE_GOLD_ORE -> score += 800;
-              case DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE -> score += 1000;
-            }
-          }
+          case COAL_ORE, DEEPSLATE_COAL_ORE -> score += 10;
+          case IRON_ORE, DEEPSLATE_IRON_ORE -> score += 100;
+          case GOLD_ORE, DEEPSLATE_GOLD_ORE -> score += 800;
+          case DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE -> score += 1000;
         }
         //ゲーム終了後にスコアが入らないように設定
-        if (p.getGameTime() > 0 && !(score == 0)) {
-          p.setScore(p.getScore() + score);
-          player.sendMessage("現在のスコアは" + p.getScore() + " 点");
+        if (executingPlayer.getGameTime() > 0 && !(score == 0)) {
+          executingPlayer.setScore(executingPlayer.getScore() + score);
+          player.sendMessage("現在のスコアは" + executingPlayer.getScore() + " 点");
         }
       }
     }
@@ -133,7 +126,6 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
 
   /**
    * 現在実行しているプレイヤーのスコア情報を取得する。
-   *
    * @param player コマンドを実行したプレイヤー
    * @return 現在ゲームを実行しているプレイヤーのスコア情報
    */
@@ -181,7 +173,6 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
 
   /**
    * ゲーム開始を知らせる。
-   *
    * @param player コマンドを実行したプレイヤー
    */
   private void gameStart(Player player) {
