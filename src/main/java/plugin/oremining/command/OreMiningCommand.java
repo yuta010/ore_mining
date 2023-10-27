@@ -3,15 +3,9 @@ package plugin.oremining.command;
 import static org.bukkit.Material.DIAMOND_PICKAXE;
 import static org.bukkit.Material.TORCH;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -25,8 +19,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import plugin.oremining.Main;
+import plugin.oremining.PlayerScoreDate;
 import plugin.oremining.data.ExecutingPlayer;
-import plugin.oremining.mapper.PlayerScoreMapper;
 import plugin.oremining.mapper.data.PlayerScore;
 
 /**
@@ -38,37 +32,25 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
 
   public static final int GAME_TIME = 300;
   private final Main main;
+  private final PlayerScoreDate playerScoreDate = new PlayerScoreDate();
   List<ExecutingPlayer> executingPlayerList = new ArrayList<>();
   public static final String List = "list";
-  private final SqlSessionFactory sqlSessionFactory;
 
   public OreMiningCommand(Main main) {
     this.main = main;
-
-    try {
-      InputStream inputStream = Resources.getResourceAsStream("mybatis-config.xml");
-      this.sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @Override
   public boolean onExecutePlayerCommand(Player player, Command command, String label, String[] args) {
-    if (args.length == 1 && List.equals(args[0])){
+    //最初の引数が「list」だったらスコアを一覧表示して処理を終了する
+    if (args.length == 1 && List.equals(args[0])) {
 
-      try (SqlSession session = sqlSessionFactory.openSession()) {
-        PlayerScoreMapper mapper = session.getMapper(PlayerScoreMapper.class);
-        List<PlayerScore> playerScoreList = mapper.selectList();
-        for(PlayerScore playerScore : playerScoreList){
-          player.sendMessage(String.format(playerScore.getId()
-              + " | " + playerScore.getPlayerName()
-              + " | " + playerScore.getScore()
-              + " | " + playerScore.getRegisteredAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
-        }
-      }
+      sendPlayerScoreList(player);
+
       return false;
+
     } else if (args.length == 0) {
+
       ExecutingPlayer nowExecutingPlayer = getPlayerScore(player);
 
       getPlayerScore(player);
@@ -80,16 +62,31 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       gamePlay(player, nowExecutingPlayer);
 
     } else {
+
       player.sendMessage("実行できません。ゲームを実行する場合引数はなし。\n"
           + "スコアを表示する場合はlistを入力してください。");
+
     }
       return true;
   }
 
-
   @Override
   public boolean onExecuteNPCCommand(CommandSender sender, Command command, String label, String[] args) {
     return false;
+  }
+
+  /**
+   * 現在登録されているスコアの一覧をメッセージに送る。
+   * @param player　プレイヤー
+   */
+  private void sendPlayerScoreList(Player player) {
+    List<PlayerScore> playerScoreList = playerScoreDate.selectList();
+    for (PlayerScore playerScore : playerScoreList) {
+      player.sendMessage(String.format(playerScore.getId()
+          + " | " + playerScore.getPlayerName()
+          + " | " + playerScore.getScore()
+          + " | " + playerScore.getRegisteredAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+    }
   }
 
   /**
@@ -148,7 +145,6 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
 
   /**
    * 新規のプレイヤー情報をリストに追加されます。
-   *
    * @param player コマンドを実行したプレイヤー
    * @return 新規プレイヤー
    */
@@ -160,7 +156,6 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
 
   /**
    * ゲーム開始時に体力と空腹度を20に設定し、ダイヤモンドピッケルを装備
-   *
    * @param player コマンドを実行したプレイヤー
    */
   private void initialSet(Player player) {
@@ -183,7 +178,6 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
 
   /**
    * ゲームを実行します。規定の時間内に特定の鉱石を採掘するとスコアが加算されます。合計スコアを時間経過後に表示します。
-   *
    * @param player  コマンドを実行したプレイヤー
    * @param nowExecutingPlayer プレイヤースコア情報
    */
@@ -197,17 +191,14 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
             0, 70, 0);
 
 
-        try (SqlSession session = sqlSessionFactory.openSession(true)) {
-          PlayerScoreMapper mapper = session.getMapper(PlayerScoreMapper.class);
-          mapper.insert(new PlayerScore(
-              nowExecutingPlayer.getPlayerName(),
-              nowExecutingPlayer.getScore()));
+        playerScoreDate.insert(new PlayerScore(
+            nowExecutingPlayer.getPlayerName(),
+            nowExecutingPlayer.getScore()));
+
           removePotionEffect(player);
           executingPlayerList.clear();
-        }
         return;
       }
-
       switch (nowExecutingPlayer.getGameTime()) {
         case 60, 120, 180, 240 ->
             player.sendMessage("残り " + nowExecutingPlayer.getGameTime() / 60 + " 分\n"
