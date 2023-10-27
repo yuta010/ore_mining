@@ -6,8 +6,9 @@
 
 # DEMO
 
-動画は後日掲載予定
+https://github.com/yuta010/ore_mining/assets/125342500/39f41eac-947c-474b-8790-e2caaf15cd23
 
+⚠️　見続けると酔う可能性がありますのでご注意ください。
 # Requirement
 * Java版 Minecraft version 1.20.1
 * Spigot 1.20.1
