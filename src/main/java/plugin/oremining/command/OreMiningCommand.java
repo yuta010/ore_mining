@@ -115,7 +115,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
           case GOLD_ORE, DEEPSLATE_GOLD_ORE -> score += 800;
           case DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE -> score += 1000;
         }
-        //ゲーム終了後にスコアが入らないように設定
+        //ゲーム終了後にスコアが入らないこと。+ ゲーム中にスコア0てんの鉱石等を破壊しても表示しないこと。
         if (executingPlayer.getGameTime() > 0 && !(score == 0)) {
           executingPlayer.setScore(executingPlayer.getScore() + score);
           player.sendMessage("現在のスコアは" + executingPlayer.getScore() + " 点");
@@ -196,13 +196,14 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
             nowExecutingPlayer.getPlayerName() + " の点数は" + nowExecutingPlayer.getScore() + " 点",
             0, 70, 0);
 
-        removePotionEffect(player);
 
         try (SqlSession session = sqlSessionFactory.openSession(true)) {
           PlayerScoreMapper mapper = session.getMapper(PlayerScoreMapper.class);
           mapper.insert(new PlayerScore(
               nowExecutingPlayer.getPlayerName(),
               nowExecutingPlayer.getScore()));
+          removePotionEffect(player);
+          executingPlayerList.clear();
         }
         return;
       }
