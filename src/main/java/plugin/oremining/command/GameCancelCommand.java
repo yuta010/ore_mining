@@ -24,7 +24,9 @@ public class GameCancelCommand extends BaseCommand {
   @Override
   public boolean onExecutePlayerCommand(Player player, Command command, String label, String[] args) {
     List<ExecutingPlayer> executingPlayerList = oreMiningCommand.executingPlayerList;
-    boolean nowPlayer = executingPlayerList.stream().anyMatch(p -> p.getPlayerName().equals(player.getName()));
+    boolean nowPlayer = executingPlayerList
+        .stream()
+        .anyMatch(p -> p.getPlayerName().equals(player.getName()));
 
     if(nowPlayer){
       Bukkit.getScheduler().cancelTasks(main);
