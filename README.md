@@ -5,14 +5,15 @@
 ・５分間のうちにハイスコアを目指すゲームです。取得難易度が高くスコアの高い鉱石を狙って採掘するか、取得難易度が低くスコアの低い鉱石を狙って採掘するかはPlayerの戦略次第です。
 
 # DEMO
+⚠️　動画を見続けると酔う可能性がありますのでご注意ください。
 
 https://github.com/yuta010/ore_mining/assets/125342500/39f41eac-947c-474b-8790-e2caaf15cd23
 
-⚠️　見続けると酔う可能性がありますのでご注意ください。
 # Requirement
 * Java版 Minecraft version 1.20.1
 * Spigot 1.20.1
 * JDK 17
+* MyBatis
 * MySQL
 
 # Usage
@@ -30,17 +31,25 @@ https://github.com/yuta010/ore_mining/assets/125342500/39f41eac-947c-474b-8790-e
 (5)　ゲーム終了後にプレイヤー名、スコア、日時がDBに保存されます。
 
 <h3>２　/oremining list</h3>
-・　DBに保存されたプレイヤー名、スコア、日時のトップ３の情報を取得することができます。
+・DBに保存されたプレイヤー名、スコア、日時のトップ３の情報を取得することができます。
 
 <h3>３　/gamecancelコマンドについて</h3>
 (1)　鉱石採掘ゲーム実行中にコマンドを実行するとゲームを強制終了することができます。</br>
 (2)　ゲームを実行していない場合は、「ゲームは実行されていません。」と表示されます。
 
+<h3>データベースの接続方法について</h3>
+(1)　自身のローカル環境でMySQLに接続してください。</br>
+(2)　データベース名はspigot_server、テーブル名はplayer_scoreで作成してください。</br>
+(3)　テーブルの作成は下記をコピーして使用してください。</br>
+```mysql
+ CREATE TABLE player_score(id int auto_increment, player_name varchar(100), score int, registered_at datetime, primary key(id));
+```
+(4)　このMySQLのurl,username,passwordは自身のローカル環境に合わせてご使用ください。(mybatis-config.xmlで設定します。)
 # Note
 <h3>⚠️　注意点　⚠️</h3>
 ・メインハンドのアイテムはダイヤモンドピッケルに上書きされてしまうので注意してください。</br>
 ・ゲームを途中で中断する場合は必ずgamecancelコマンドを実行してください。</br>
 （ゲーム中に再度oreminingコマンドを実行するとゲーム時間が早まってしまうためです。）</br>
-・動作確認はMacのみでしか行えていません。</br>
+・動作確認はMacのみで行なっています。</br>
 ・マルチプレイには対応しておりません。</br>
-・ローカル環境でご使用ください。</br>
+・自身のローカル環境でご使用ください。</br>
