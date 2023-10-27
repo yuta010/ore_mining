@@ -112,10 +112,10 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
           case GOLD_ORE, DEEPSLATE_GOLD_ORE -> score += 800;
           case DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE -> score += 1000;
         }
-        //ゲーム終了後にスコアが入らないこと。+ ゲーム中にスコア0てんの鉱石等を破壊しても表示しないこと。
+        //ゲーム終了後にスコアが入らないこと。+ ゲーム中にスコア0点の鉱石等を破壊しても表示しないこと。
         if (executingPlayer.getGameTime() > 0 && !(score == 0)) {
           executingPlayer.setScore(executingPlayer.getScore() + score);
-          player.sendMessage("現在のスコアは" + executingPlayer.getScore() + " 点");
+          player.sendMessage(type.name() + "をGET " + "現在のスコアは" + executingPlayer.getScore() + " 点");
         }
       }
     }
