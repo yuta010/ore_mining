@@ -41,9 +41,11 @@ https://github.com/yuta010/ore_mining/assets/125342500/39f41eac-947c-474b-8790-e
 (1)　自身のローカル環境でMySQLに接続してください。</br>
 (2)　データベース名はspigot_server、テーブル名はplayer_scoreで作成してください。</br>
 (3)　テーブルの作成は下記をコピーして使用してください。</br>
-```mysql
+```
  CREATE TABLE player_score(id int auto_increment, player_name varchar(100), score int, registered_at datetime, primary key(id));
 ```
+<br>
+
 (4)　このMySQLのurl,username,passwordは自身のローカル環境に合わせてご使用ください。(mybatis-config.xmlで設定します。)
 # Note
 <h3>⚠️　注意点　⚠️</h3>
