@@ -44,28 +44,17 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   public boolean onExecutePlayerCommand(Player player, Command command, String label, String[] args) {
     //最初の引数が「list」だったらスコアを一覧表示して処理を終了する
     if (args.length == 1 && LIST_COMMAND.equals(args[0])) {
-
       sendPlayerScoreList(player);
-
       return false;
-
     } else if (args.length == 0) {
-
       ExecutingPlayer nowExecutingPlayer = getPlayerScore(player);
-
       getPlayerScore(player);
-
       initialSet(player);
-
       gameStart(player);
-
       gamePlay(player, nowExecutingPlayer);
-
     } else {
-
       player.sendMessage("実行できません。ゲームを実行する場合引数はなし。\n"
           + "スコアを表示する場合はlistを入力してください。");
-
     }
       return true;
   }
@@ -104,7 +93,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
     }
 
     for (ExecutingPlayer executingPlayer : executingPlayerList) {
-      if (executingPlayer.getPlayerName().equals(player.getName())) {
+      if (executingPlayer.getPlayerName().equals(player.getName()) && executingPlayer.getGameTime() > 0) {
         int score = 0;
         switch (type) {
           case COAL_ORE, DEEPSLATE_COAL_ORE -> score += 10;
@@ -113,7 +102,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
           case DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE -> score += 1000;
         }
         //ゲーム終了後にスコアが入らないこと。+ ゲーム中にスコア0点の鉱石等を破壊しても表示しないこと。
-        if (executingPlayer.getGameTime() > 0 && !(score == 0)) {
+        if (!(score == 0)) {
           executingPlayer.setScore(executingPlayer.getScore() + score);
           player.sendMessage(type.name() + "をGET " + "現在のスコアは" + executingPlayer.getScore() + " 点");
         }
