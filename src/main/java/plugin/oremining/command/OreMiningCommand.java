@@ -34,7 +34,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   private final Main main;
   private final PlayerScoreDate playerScoreDate = new PlayerScoreDate();
   List<ExecutingPlayer> executingPlayerList = new ArrayList<>();
-  public static final String List = "list";
+  public static final String LIST_COMMAND = "list";
 
   public OreMiningCommand(Main main) {
     this.main = main;
@@ -43,7 +43,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
   @Override
   public boolean onExecutePlayerCommand(Player player, Command command, String label, String[] args) {
     //最初の引数が「list」だったらスコアを一覧表示して処理を終了する
-    if (args.length == 1 && List.equals(args[0])) {
+    if (args.length == 1 && LIST_COMMAND.equals(args[0])) {
 
       sendPlayerScoreList(player);
 
