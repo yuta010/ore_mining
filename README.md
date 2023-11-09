@@ -43,7 +43,7 @@ https://github.com/yuta010/ore_mining/assets/125342500/39f41eac-947c-474b-8790-e
 (3)　テーブルの作成は下記をコピーして使用してください。</br>
 
 ```:mysql
- CREATE TABLE player_score(id int auto_increment, player_name varchar(100), score int, registered_at datetime, primary key(id));
+ CREATE TABLE player_score(id int auto_increment, name varchar(100), score int, registered_at datetime, primary key(id));
 ```
 
 (4)　このMySQLのurl,username,passwordは自身のローカル環境に合わせてご使用ください。(mybatis-config.xmlで設定します。)
