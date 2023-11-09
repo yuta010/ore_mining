@@ -1,12 +1,13 @@
 package plugin.oremining.command;
 
-import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import plugin.oremining.Main;
 import plugin.oremining.data.ExecutingPlayer;
+
+import java.util.List;
 
 /**
  * OreMiningを強制終了させるコマンドです。
@@ -26,7 +27,7 @@ public class GameCancelCommand extends BaseCommand {
     List<ExecutingPlayer> executingPlayerList = oreMiningCommand.executingPlayerList;
     boolean executingPlayer = executingPlayerList
         .stream()
-        .anyMatch(p -> p.getPlayerName().equals(player.getName()));
+        .anyMatch(p -> p.getName().equals(player.getName()));
 
     if(executingPlayer){
       Bukkit.getScheduler().cancelTasks(main);

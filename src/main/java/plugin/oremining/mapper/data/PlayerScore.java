@@ -1,9 +1,10 @@
 package plugin.oremining.mapper.data;
 
-import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 /**
  * プレイヤーのスコア情報を扱うオブジェクトです。
@@ -15,12 +16,12 @@ import lombok.Setter;
 public class PlayerScore {
 
   private int id;
-  private String playerName;
+  private String name;
   private int score;
   private LocalDateTime registeredAt;
 
-  public PlayerScore(String playerName,int score){
-    this.playerName = playerName;
+  public PlayerScore(String name, int score){
+    this.name = name;
     this.score = score;
   }
 }
