@@ -1,11 +1,5 @@
 package plugin.oremining.command;
 
-import static org.bukkit.Material.DIAMOND_PICKAXE;
-import static org.bukkit.Material.TORCH;
-
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -22,6 +16,13 @@ import plugin.oremining.Main;
 import plugin.oremining.PlayerScoreDate;
 import plugin.oremining.data.ExecutingPlayer;
 import plugin.oremining.mapper.data.PlayerScore;
+
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.bukkit.Material.DIAMOND_PICKAXE;
+import static org.bukkit.Material.TORCH;
 
 /**
  * 制限時間内に指定した鉱石を採掘して、スコアを獲得するゲームを起動するコマンドです。
@@ -72,7 +73,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
     List<PlayerScore> playerScoreList = playerScoreDate.selectList();
     for (PlayerScore playerScore : playerScoreList) {
       player.sendMessage(String.format(playerScore.getId()
-          + " | " + playerScore.getPlayerName()
+          + " | " + playerScore.getName()
           + " | " + playerScore.getScore()
           + " | " + playerScore.getRegisteredAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
     }
@@ -93,7 +94,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
     }
 
     for (ExecutingPlayer executingPlayer : executingPlayerList) {
-      if (executingPlayer.getPlayerName().equals(player.getName()) && executingPlayer.getGameTime() > 0) {
+      if (executingPlayer.getName().equals(player.getName()) && executingPlayer.getGameTime() > 0) {
         int score = 0;
         switch (type) {
           case COAL_ORE, DEEPSLATE_COAL_ORE -> score += 10;
@@ -101,7 +102,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
           case GOLD_ORE, DEEPSLATE_GOLD_ORE -> score += 800;
           case DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE -> score += 1000;
         }
-        //ゲーム終了後にスコアが入らないこと。+ ゲーム中にスコア0点の鉱石等を破壊しても表示しないこと。
+        //ゲーム中にスコア0点の鉱石等を破壊しても表示しないこと。
         if (!(score == 0)) {
           executingPlayer.setScore(executingPlayer.getScore() + score);
           player.sendMessage(type.name() + "をGET " + "現在のスコアは" + executingPlayer.getScore() + " 点");
@@ -122,7 +123,7 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
       executingPlayer = addNewPlayer(player);
     } else {
       executingPlayer = executingPlayerList.stream().findFirst().map(ps
-          -> ps.getPlayerName().equals(player.getName())
+          -> ps.getName().equals(player.getName())
           ? ps
           : addNewPlayer(player)).orElse(executingPlayer);
     }
@@ -176,12 +177,12 @@ public class OreMiningCommand extends BaseCommand implements  Listener {
         Runnable.cancel();
 
         player.sendTitle("ゲームが終了しました。",
-            nowExecutingPlayer.getPlayerName() + " の点数は" + nowExecutingPlayer.getScore() + " 点",
+            nowExecutingPlayer.getName() + " の点数は" + nowExecutingPlayer.getScore() + " 点",
             0, 70, 0);
 
 
         playerScoreDate.insert(new PlayerScore(
-            nowExecutingPlayer.getPlayerName(),
+            nowExecutingPlayer.getName(),
             nowExecutingPlayer.getScore()));
 
           removePotionEffect(player);
